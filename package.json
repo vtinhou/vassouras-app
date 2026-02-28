@@ -1,0 +1,7 @@
+{
+  "name": "controle-industrial-vassouras-netlify-db",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.11.5"
+  }
+}
