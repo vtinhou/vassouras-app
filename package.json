@@ -1,0 +1,7 @@
+{
+  "name": "vassouras-erp",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.11.5"
+  }
+}
