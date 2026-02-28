@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP Sistema</title>
+<style>
+body { font-family: Arial; margin:0; }
+#login-screen, #app-container { display:none; }
+#login-screen { display:flex; height:100vh; justify-content:center; align-items:center; flex-direction:column; }
+button { padding:10px 20px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <h2>Login</h2>
+  <input type="email" id="login-email" placeholder="Email"><br><br>
+  <input type="password" id="login-pass" placeholder="Senha"><br><br>
+  <button onclick="loginSistema()">Entrar</button>
+  <div id="login-error" style="color:red; display:none;">Login inválido</div>
+</div>
+
+<div id="app-container">
+  <h2>Sistema</h2>
+  <button onclick="logoutSistema()">Sair</button>
+  <h3>Clientes</h3>
+  <input id="cliente-nome" placeholder="Nome cliente">
+  <button onclick="addCliente()">Adicionar</button>
+  <ul id="lista-clientes"></ul>
+</div>
+
+<script>
+
+const DataStore = {
+    apiBase: "/.netlify/functions",
+    data: { clientes: [] },
+
+    async init() {
+        const res = await fetch(this.apiBase + "/load");
+        const json = await res.json();
+        if (json.data) this.data = json.data;
+        renderClientes();
+    },
+
+    async save() {
+        await fetch(this.apiBase + "/save", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({ data:this.data })
+        });
+    }
+};
+
+function renderClientes() {
+    const ul = document.getElementById("lista-clientes");
+    ul.innerHTML = "";
+    DataStore.data.clientes.forEach(c => {
+        const li = document.createElement("li");
+        li.textContent = c.nome;
+        ul.appendChild(li);
+    });
+}
+
+function addCliente() {
+    const nome = document.getElementById("cliente-nome").value;
+    if(!nome) return;
+    DataStore.data.clientes.push({ nome });
+    DataStore.save();
+    renderClientes();
+}
+
+async function loginSistema() {
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-pass").value;
+
+    const res = await fetch("/.netlify/functions/login", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ email, password })
+    });
+
+    if (res.ok) {
+        sessionStorage.setItem("logado","sim");
+        iniciarSistema();
+    } else {
+        document.getElementById("login-error").style.display="block";
+    }
+}
+
+function logoutSistema() {
+    sessionStorage.removeItem("logado");
+    location.reload();
+}
+
+async function iniciarSistema() {
+    document.getElementById("login-screen").style.display="none";
+    document.getElementById("app-container").style.display="block";
+    await DataStore.init();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (sessionStorage.getItem("logado")==="sim") {
+        iniciarSistema();
+    } else {
+        document.getElementById("login-screen").style.display="flex";
+    }
+});
+
+</script>
+</body>
+</html>
