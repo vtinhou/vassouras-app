@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Controle Industrial Vassouras</title>
+<style>
+body{font-family:Arial;margin:20px;}
+h1{color:#ff6b00}
+button{padding:6px 12px;margin:4px 0}
+input{padding:6px;margin:4px 0}
+</style>
+</head>
+<body>
+
+<h1>Controle Industrial Vassouras</h1>
+
+<h2>Clientes</h2>
+<input id="cliente-nome" placeholder="Nome do cliente" />
+<button onclick="addCliente()">Cadastrar</button>
+<ul id="clientes-list"></ul>
+
+<script>
+const API_BASE = "/.netlify/functions";
+
+async function loadData(){
+    const res = await fetch(API_BASE + "/load");
+    const json = await res.json();
+    window.APP_DATA = json.data || { clientes: [] };
+    renderClientes();
+}
+
+async function saveData(){
+    await fetch(API_BASE + "/save", {
+        method:"POST",
+        headers:{ "content-type":"application/json" },
+        body: JSON.stringify({ data: window.APP_DATA })
+    });
+}
+
+function renderClientes(){
+    const ul = document.getElementById("clientes-list");
+    ul.innerHTML = "";
+    window.APP_DATA.clientes.forEach((c,i)=>{
+        const li = document.createElement("li");
+        li.textContent = c.nome;
+        ul.appendChild(li);
+    });
+}
+
+function addCliente(){
+    const nome = document.getElementById("cliente-nome").value;
+    if(!nome) return;
+    window.APP_DATA.clientes.push({ nome });
+    document.getElementById("cliente-nome").value = "";
+    renderClientes();
+    saveData();
+}
+
+loadData();
+</script>
+
+</body>
+</html>
