@@ -1,0 +1,10 @@
+{
+  "name": "controle-industrial-vassouras",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
